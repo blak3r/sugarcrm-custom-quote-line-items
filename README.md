@@ -9,7 +9,7 @@ Also, I'd recommend looking at [this blog](http://blog.sssworld.com/2013/10/25/c
 It walks you through how to make these changes in an upgrade safe manner and provides more commentary.
 But, doesn't show how to add a "custom" field (just a standard field that isn't normally there).
 
-
+![Example Quote With Modified Line Items](https://raw.github.com/blak3r/sugarcrm-custom-quote-line-items/master/SampleWithCustomLineItem.png)
 
 ### Notes:
 - For the javascript files, on my instance they were minified.  I "beautified" them using this website: http://jsbeautifier.org/
