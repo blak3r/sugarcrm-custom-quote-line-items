@@ -10,7 +10,6 @@
  *
  * Copyright (C) 2004-2013 SugarCRM Inc.  All rights reserved.
  ********************************************************************************/
-
 table_array = new Array();
 
 function QuotesEditManager(Y) {
@@ -30,7 +29,8 @@ function QuotesEditManager(Y) {
                 "type_id": "type_id",
                 "tax_class": "tax_class",
                 "tax_class_name": "tax_class_name",
-                "description": "description"
+                "description": "description",
+                "internal_notes_c": "internal_notes_c"
             },
             "passthru_data": {
                 "row_id": count
@@ -344,7 +344,7 @@ function QuotesEditManager(Y) {
         }, ['button']);
         inputEl.tableId = id;
         inputEl.onclick = function () {
-            quotesManager.addRow("", "", "", "", 0, 0, "", "", "", "", "", "", "", this.tableId, '', '', '', '', '', '0', '', '', '');
+            quotesManager.addRow("", "", "", "", 0, 0, "", "", "", "", "", "", "", this.tableId, '', '', '', '', '', '0', '', '', '', '');
         }
         tdEl.appendChild(inputEl);
         var inputEl = this.createElement('input', {
@@ -595,25 +595,51 @@ function QuotesEditManager(Y) {
         tdEl.width = 77;
         tdEl.appendChild(document.createTextNode(this.list_mf_part_num_string));
         rowEl.appendChild(tdEl);
+        // BR 2014-02-19, This removes the table headers for tax and cost.
         var tdEl = this.blankDataLabel.cloneNode(false);
-        tdEl.width = 100;
-        tdEl.appendChild(document.createTextNode(this.list_taxclass_string));
+        tdEl.width = 1; // was 75
+        tdEl.appendChild(document.createTextNode( ""/*this.list_taxclass_string*/ ));
         rowEl.appendChild(tdEl);
         var tdEl = this.blankDataLabel.cloneNode(false);
-        tdEl.width = 75;
-        tdEl.appendChild(document.createTextNode(this.list_cost_string));
+        tdEl.width = 1; // Was 100
+        tdEl.appendChild(document.createTextNode("" /*this.list_cost_string*/ ));
         rowEl.appendChild(tdEl);
-        var tdEl = this.blankDataLabel.cloneNode(false);
+
+        var tdEl=this.blankDataLabel.cloneNode(false);
         tdEl.width = 75;
         tdEl.appendChild(document.createTextNode(this.list_list_string));
         rowEl.appendChild(tdEl);
         var tdEl = this.blankDataLabel.cloneNode(false);
-        tdEl.appendChild(document.createTextNode(this.list_discount_string));
+        tdEl.appendChild(document.createTextNode( this.list_discount_string));
         rowEl.appendChild(tdEl);
+        // BR 2014-02-19, This removes the table headers for Discount.
         var tdEl = this.blankDataLabel.cloneNode(false);
-        tdEl.width = 75;
-        tdEl.appendChild(document.createTextNode(this.list_deal_tot));
+        tdEl.width = 1;
+        tdEl.appendChild(document.createTextNode(''/*this.list_deal_tot*/));
         rowEl.appendChild(tdEl);
+
+        // BR: Added as header for remove button column
+        var tdEl = this.blankDataLabel.cloneNode(false);
+        tdEl.width = 1;
+        tdEl.appendChild(document.createTextNode(''));
+        rowEl.appendChild(tdEl);
+
+        // Spacer to seperate remove and notes
+        var tdEl = this.blankDataLabel.cloneNode(false);
+        tdEl.width = 1;
+        tdEl.appendChild(document.createTextNode(''));
+        rowEl.appendChild(tdEl);
+
+
+
+        // BR: Added as header for internal notes column
+        var tdEl = this.blankDataLabel.cloneNode(false);
+        tdEl.width = 50;
+        tdEl.appendChild(document.createTextNode('Internal Notes'));
+        tdEl.style['margin-left'] = "25px";
+        //tdEl.style.textAlign = 'center';
+        rowEl.appendChild(tdEl);
+
     }
     this.addCommentRow = function (id, table_id, comment_description) {
         var form = document.getElementById('EditView');
@@ -710,7 +736,8 @@ function QuotesEditManager(Y) {
         this.count++;
         Y.one('#product_count')._node.value = this.count;
     }
-    this.addRow = function (id, quantity, product_template_id, product_name, cost_price, list_price, discount_price, pricing_formula, pricing_formula_name, pricing_factor, tax_class, tax_class_name, mft_part_num, table_id, bundle_stage, bundle_name, bundle_shipping, product_description, type_id, discount_amount, discount_select, deal_calc, product_status) {
+    this.addRow = function (id, quantity, product_template_id, product_name, cost_price, list_price, discount_price, pricing_formula, pricing_formula_name, pricing_factor, tax_class, tax_class_name, mft_part_num, table_id, bundle_stage, bundle_name, bundle_shipping, product_description, type_id, discount_amount, discount_select, deal_calc, product_status, internal_notes_c) {
+
         if (!this.table_exists(table_id)) {
             table_id = this.addTable(table_id, bundle_stage, bundle_name, bundle_shipping);
         }
@@ -733,7 +760,7 @@ function QuotesEditManager(Y) {
             "method": "query",
             "modules": ["ProductTemplates"],
             "group": "or",
-            "field_list": ["name", "id", "type_id", "mft_part_num", "cost_price", "list_price", "discount_price", "tax_class", "pricing_factor", "description", "cost_usdollar", "list_usdollar", "discount_usdollar", "tax_class_name"],
+            "field_list": ["name", "id", "type_id", "mft_part_num", "cost_price", "list_price", "discount_price", "tax_class", "pricing_factor", "description", "cost_usdollar", "list_usdollar", "discount_usdollar", "tax_class_name", "internal_notes_c"],
             "populate_list": ["name_" + this.count, "product_template_id_" + this.count],
             "conditions": [{
                 "name": "name",
@@ -862,7 +889,7 @@ function QuotesEditManager(Y) {
         var itemName = 'name_' + this.count;
         var textEl = this.createElement('input', {
             'type': 'text',
-            'size': 30,
+            'size': 35,
             'name': "product_name[" + this.count + "]",
             'id': itemName,
             'value': product_name
@@ -881,7 +908,7 @@ function QuotesEditManager(Y) {
         product_description = product_description.replace(/&#039;/g, '\'');
         var textEl = this.createElement('textarea', {
             'rows': 3,
-            'cols': 30,
+            'cols': 40,
             'name': "product_description[" + this.count + "]",
             'id': itemName,
             'value': product_description.replace(/<br>/g, '\n')
@@ -893,7 +920,7 @@ function QuotesEditManager(Y) {
         item_list_MSI[itemName] = textEl;
         cell1.appendChild(textEl);
         var cellb = row.insertCell(row.cells.length);
-        cellb.width = 55;
+        cellb.width = 26;
         cellb.noWrap = true;
         var spanEl = this.createElement('span', {}, ['id-ff']);
         cellb.appendChild(spanEl);
@@ -914,7 +941,7 @@ function QuotesEditManager(Y) {
         }
         spanEl.appendChild(buttonEl);
         var cell2 = row.insertCell(row.cells.length);
-        cell2.width = 75;
+        cell2.width = 100;
         var itemName = 'mft_part_num_' + this.count;
         var textEl = this.createElement('input', {
             'type': 'text',
@@ -935,13 +962,15 @@ function QuotesEditManager(Y) {
         });
         item_list_MSI[itemName] = textEl;
         cell2.appendChild(textEl);
+
+        /* BR - Removes Tax Class*/
         var divselect = this.createElement('div', {
             'id': 'taxselect' + this.count
         });
         Y.one(divselect).hide();
         item_list_MSI['taxselect' + this.count] = divselect;
         var cell3 = row.insertCell(row.cells.length);
-        cell3.width = 100;
+        cell3.width = 1;
         var itemName = 'tax_class_select_name_' + this.count;
         var selectEl = this.createElement('select', {
             'name': "tax_class_select_name[" + this.count + "]",
@@ -967,7 +996,10 @@ function QuotesEditManager(Y) {
         var divnoselect = this.createElement('div', {
             'id': 'taxinput' + this.count
         });
+
         Y.one(divnoselect).hide();
+
+
         item_list_MSI['taxinput' + this.count] = divselect;
         var itemName = 'tax_class_name_' + this.count;
         var textEl = this.createElement('input', {
@@ -975,22 +1007,29 @@ function QuotesEditManager(Y) {
             'size': 8,
             'name': 'tax_class_name[' + this.count + ']',
             'id': itemName,
-            'value': tax_class_name
+            'value': tax_class_name,
+            'style': 'display: none;'  /** BR, Hides the Cost column **/
         });
+        textEl.style.display = 'none'; /** BR, Hides the Tax column **/
         item_list_MSI[itemName] = textEl;
         divnoselect.appendChild(textEl);
         cell3.appendChild(divnoselect);
+
+
+        /* BR - Removes Cost */
         var cell4 = row.insertCell(row.cells.length);
-        cell4.width = 75;
+        cell4.width = 1;
         var itemName = 'cost_price_' + this.count;
         var textEl = this.createElement('input', {
             'type': 'text',
             'size': 8,
             'name': "cost_price[" + this.count + "]",
             'id': itemName,
-            'value': cost_price
+            'value': cost_price,
+            'style': 'display: none;'
         });
         textEl.style.textAlign = 'right';
+        textEl.style.display = 'none'; /** BR, Hides the Cost column **/
         textEl.onchange = function () {
             if (!quotesManager.isAmount(toDecimal(unformatNumber(this.value, num_grp_sep, dec_sep), quotesManager.precision))) {
                 alert(quotesManager.invalidAmount);
@@ -999,6 +1038,8 @@ function QuotesEditManager(Y) {
         };
         item_list_MSI[itemName] = textEl;
         cell4.appendChild(textEl);
+        /* END EDIT COST*/
+
         var cell5 = row.insertCell(row.cells.length);
         cell5.width = 75;
         var itemName = 'list_price_' + this.count;
@@ -1040,7 +1081,7 @@ function QuotesEditManager(Y) {
         item_list_MSI[itemName] = textEl;
         cell6.appendChild(textEl);
         var cell7 = row.insertCell(row.cells.length);
-        cell7.width = 60;
+        cell7.width = 1;
         var divselect = this.createElement('div', {
             'id': 'discount_amount_div' + this.count
         });
@@ -1054,6 +1095,7 @@ function QuotesEditManager(Y) {
             'id': itemName,
             'value': discount_amount
         });
+        textEl.style.display = "none"; // Hide Discount
         textEl.style.textAlign = 'right';
         textEl.count = this.count;
         textEl.onchange = function () {
@@ -1064,14 +1106,18 @@ function QuotesEditManager(Y) {
                 this.select();
             }
         };
+
         item_list_MSI[itemName] = textEl;
         divselect.appendChild(textEl);
-        var cell8 = row.insertCell(row.cells.length);
-        cell8.width = 20;
-        var newtext = document.createTextNode("in\u00A0%");
-        cell8.appendChild(newtext);
-        var cell9 = row.insertCell(row.cells.length);
-        cell9.width = 50;
+
+        /*
+         var cell8 = row.insertCell(row.cells.length);
+         cell8.width = 20;
+         var newtext = document.createTextNode("in\u00A0%");
+         cell8.appendChild(newtext);
+         var cell9 = row.insertCell(row.cells.length);
+         cell9.width = 50;
+         */
         var ele2 = this.createElement('td', {});
         var itemName = 'checkbox_select_' + this.count;
         var textEl = this.createElement('input', {
@@ -1084,7 +1130,8 @@ function QuotesEditManager(Y) {
         textEl.onclick = function () {
             quotesManager.discount_calculated(document, this.count);
         }
-        cell9.appendChild(ele2);
+        textEl.style.display = "none";
+        //    cell9.appendChild(ele2);
         ele2.appendChild(textEl);
         if (discount_select == true) {
             textEl.setAttribute('checked', true);
@@ -1114,7 +1161,7 @@ function QuotesEditManager(Y) {
         });
         item_list_MSI[itemName] = textEl;
         divnoselect.appendChild(textEl);
-        cell9.appendChild(divnoselect);
+        //cell9.appendChild(divnoselect);
         var cell10 = row.insertCell(row.cells.length);
         var buttonEl = this.createElement('input', {
             'type': 'button',
@@ -1131,6 +1178,43 @@ function QuotesEditManager(Y) {
             }
         }
         cell10.appendChild(buttonEl);
+
+        var spacerCell = row.insertCell(row.cells.length);
+        spacerCell.width = 25;
+
+
+        /** START INTERNAL NOTES **/
+        var cellx = row.insertCell(row.cells.length);
+        cellx.width = 300;
+        var itemName = 'internal_notes_c_' + this.count;
+        var textEl = this.createElement('textarea', {
+            'type': 'textarea',
+            'rows': 3,
+            'cols': 50,
+            'name': "internatl_notes_c_[" + this.count + "]",
+            'id': itemName,
+            'value': internal_notes_c,
+            'readonly': true,
+            'disabled': true,
+        });
+
+        textEl.style["background-color"] = 'RGB(253,253,253)';
+        textEl.style.color = '#007700';
+        textEl.style.border = '1px solid RGB(219,219,219)';
+
+        if( internal_notes_c && internal_notes_c.length > 0 ) {
+            textEl.style.display = "block";
+        } else {
+            //textEl.style.display = "none"
+        }
+
+        item_list_MSI[itemName] = textEl;
+        cellx.appendChild(textEl);
+        /*** END INTERNAL NOTES **/
+
+
+
+
         this.toEdit(document, this.count);
         this.toReadOnly(document, this.count);
         registerSingleSmartInputListener(document.getElementById('name_' + this.count));

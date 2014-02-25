@@ -106,6 +106,28 @@ function insert_thousands_separator(num, sep_char) {
     return num;
 }
 
+/**
+ * Special method for updating a text area field, it hides when there are no notes and shows otherwise
+ * @param row_id
+ * @param notes
+ */
+function update_internal_notes_c(row_id, notes) {
+    var noteId = "#internal_notes_c_" + row_id;
+    try {
+        if( notes && notes.length > 0 ) {
+            notes = notes.replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#039;/gi, '\'').replace(/&quot;/gi, '"').replace(/<br>/g, '\n');
+            quotesManager.lookup_item('internal_notes_c_' + row_id, window.document).value = notes;
+            $(noteId).show();
+        }
+        else {
+            $(noteId).hide();
+        }
+    }catch(ex) {
+        console.log("ERROR with internal_notes_c", ex);
+    }
+}
+
+// BR: This method is called when popup is closed
 function set_product_return(popup_reply_data) {
     var name_to_value_array = popup_reply_data.name_to_value_array;
     var row_id = popup_reply_data.passthru_data.row_id;
@@ -125,12 +147,17 @@ function set_product_return(popup_reply_data) {
     quotesManager.lookup_item('type_id_' + row_id, window.document).value = name_to_value_array['type_id'];
     quotesManager.lookup_item('tax_class_' + row_id, window.document).value = name_to_value_array['tax_class'];
     quotesManager.lookup_item('tax_class_name_' + row_id, window.document).value = name_to_value_array['tax_class_name'];
+
+    // BR Edit, update internal notes
+    update_internal_notes_c(row_id, name_to_value_array['internal_notes_c']);
+
     desc = name_to_value_array['description'].replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#039;/gi, '\'').replace(/&quot;/gi, '"').replace(/<br>/g, '\n');
     quotesManager.lookup_item('description_' + row_id, window.document).value = desc;
     quotesManager.toReadOnly(window.document, row_id);
     quotesManager.calculate(window.document);
 }
 
+// BR: This is used for autocomplete case
 function set_after_sqs(sqs_object, sqs_object_id) {
     var matches = sqs_object_id.match(new RegExp("\([0-9]+)\]$"));
     row_id = matches[1];
@@ -149,6 +176,10 @@ function set_after_sqs(sqs_object, sqs_object_id) {
     document.getElementById('tax_class_name_' + row_id).value = sqs_object['tax_class'];
     document.getElementById('pricing_factor_' + row_id).value = sqs_object['pricing_factor'];
     document.getElementById('description_' + row_id).value = sqs_object['description'];
+
+    // BR Edit, update internal notes
+    update_internal_notes_c(row_id, sqs_object['internal_notes_c']);
+
     quotesManager.calculate(window.document);
 }
 
